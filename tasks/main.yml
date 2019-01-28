@@ -1,0 +1,14 @@
+---
+
+- name: create gitlab local directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: true
+  with_items:
+    - "{{ gitlab_conf_location }}"
+    - "{{ gitlab_data_location }}"
+    - "{{ gitlab_logs_location }}"
+
+- import_tasks: run_container.yml

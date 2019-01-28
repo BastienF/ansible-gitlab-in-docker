@@ -1,0 +1,26 @@
+---
+
+#gitlab_external_fqdn: "gitlab.exemple.com"
+gitlab_external_ssh_port: 2222
+
+#gitlab_docker_networks:
+#  - name: "docker_network"
+
+gitlab_docker_image: "gitlab/gitlab-ce"
+gitlab_version: "11.7.0-ce.0"
+
+# Name of the gitlab docker container
+gitlab_container_name: "gitlab"
+
+gitlab_root_location: "/opt/docker-data/{{ gitlab_container_name }}"
+
+# Path on the host filesystem where will be the gitlab conf file
+gitlab_conf_location: "{{ gitlab_root_location }}/conf"
+
+# Path on the host filesystem where will be the gitlab data
+gitlab_data_location: "{{ gitlab_root_location }}/data"
+
+# Path on the host filesystem where will be the gitlab logs
+gitlab_logs_location: "{{ gitlab_root_location }}/logs"
+
+gitlab_container_restart_policy: "always"

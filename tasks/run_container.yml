@@ -1,0 +1,41 @@
+---
+
+- meta: flush_handlers
+
+- name: Create network
+  become: true
+  docker_network:
+    name: "{{ item.name }}"
+  with_items: "{{ gitlab_docker_networks }}"
+
+- name: Start or restart gitlab container
+  become: true
+  docker_container:
+    name: "{{ gitlab_container_name }}"
+    image: "{{ gitlab_docker_image }}:{{ gitlab_version }}"
+    state: "{{ gitlab_docker_state | default('started') }}"
+    restart: "{{ gitlab_docker_restart | default(false) | bool }}"
+    networks: "{{ gitlab_docker_networks }}"
+    restart_policy: "{{ gitlab_container_restart_policy }}"
+    ports:
+      - "{{ gitlab_external_ssh_port }}:22"
+    volumes:
+      - "{{ gitlab_conf_location }}:/etc/gitlab"
+      - "{{ gitlab_logs_location }}:/var/log/gitlab"
+      - "{{ gitlab_data_location }}:/var/opt/gitlab"
+    env:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'https://{{ gitlab_external_fqdn }}'
+        gitlab_rails['gitlab_ssh_host'] = '{{ gitlab_external_fqdn }}'
+        gitlab_rails['gitlab_shell_ssh_port'] = '{{ gitlab_external_ssh_port }}'
+        gitlab_rails['registry_enabled'] = false
+        nginx['listen_port'] = 80 # override only if you use a reverse proxy: https://docs.gitlab.com/omnibus/settings/nginx.html#setting-the-nginx-listen-port
+        nginx['listen_https'] = false # override only if your reverse proxy internally communicates over HTTP: https://docs.gitlab.com/omnibus/settings/nginx.html#supporting-proxied-ssl
+        # disable https redirection with fake https headers
+        nginx['proxy_set_headers'] = {
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl" => "on"
+        }
+        postgresql['shared_buffers'] = "256MB"
+        prometheus_monitoring['enable'] = false
+        sidekiq['concurrency'] = 5

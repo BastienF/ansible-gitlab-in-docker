@@ -1,0 +1,5 @@
+---
+
+- name: restart gitlab
+  set_fact:
+    gitlab_docker_restart: true
